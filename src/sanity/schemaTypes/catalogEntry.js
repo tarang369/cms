@@ -68,9 +68,17 @@ export default {
 
         {
             name: "gallery",
-            title: "Image Gallery",
+            title: "Product Images",
             type: "array",
-            of: [{ type: "image" }],
+            of: [
+                {
+                    type: "image",
+                    options: { hotspot: true },
+                    fields: [
+                        { name: "alt", title: "Alt text", type: "string" },
+                    ],
+                },
+            ],
         },
 
         {

@@ -23,6 +23,13 @@ export default {
             to: [{ type: "category" }],
             validation: (Rule) => Rule.required(),
         },
+        {
+            name: "thumbnail",
+            title: "Thumbnail",
+            type: "image",
+            options: { hotspot: true },
+            fields: [{ name: "alt", title: "Alt text", type: "string" }],
+        },
         { name: "seo", title: "SEO", type: "seoFields" },
     ],
 };

@@ -10,6 +10,13 @@ export default {
             validation: (Rule) => Rule.required(),
         },
         {
+            name: "thumbnail",
+            title: "Thumbnail",
+            type: "image",
+            options: { hotspot: true },
+            fields: [{ name: "alt", title: "Alt text", type: "string" }],
+        },
+        {
             name: "slug",
             title: "Slug",
             type: "slug",

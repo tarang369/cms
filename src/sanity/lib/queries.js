@@ -5,6 +5,10 @@ export const getCategoriesQuery = `
     "slug": slug.current,
     mode,
     description,
+    "thumbnail": {
+      "url": thumbnail.asset->url,
+      "alt": thumbnail.alt
+    },
     seo
   }
 `;
@@ -16,6 +20,10 @@ export const getCategoryBySlugQuery = `
     "slug": slug.current,
     mode,
     description,
+    "thumbnail": {
+      "url": thumbnail.asset->url,
+      "alt": thumbnail.alt
+    },
     seo
   }
 `;
@@ -36,7 +44,11 @@ export const getFeaturedEntriesQuery = `
     "category": category->{
       _id,
       title,
-      "slug": slug.current
+      "slug": slug.current,
+      "thumbnail": {
+        "url": thumbnail.asset->url,
+        "alt": thumbnail.alt
+      }
     }
   }
 `;
@@ -58,12 +70,20 @@ export const getEntriesByCategorySlugQuery = `
     "category": category->{
       _id,
       title,
-      "slug": slug.current
+      "slug": slug.current,
+      "thumbnail": {
+        "url": thumbnail.asset->url,
+        "alt": thumbnail.alt
+      }
     },
     "subcategory": subcategory->{
       _id,
       title,
-      "slug": slug.current
+      "slug": slug.current,
+      "thumbnail": {
+        "url": thumbnail.asset->url,
+        "alt": thumbnail.alt
+      }
     },
     "brand": brand->{
       _id,
@@ -75,9 +95,7 @@ export const getEntriesByCategorySlugQuery = `
       metaTitle,
       metaDescription,
       ogImage{
-        asset->{
-          url
-        }
+        asset->{ url }
       }
     },
     catalogPdf{
@@ -102,7 +120,11 @@ export const getAllEntriesQuery = `
     "category": category->{
       _id,
       title,
-      "slug": slug.current
+      "slug": slug.current,
+      "thumbnail": {
+        "url": thumbnail.asset->url,
+        "alt": thumbnail.alt
+      }
     }
   }
 `;
@@ -165,4 +187,3 @@ export const getSiteSettingsQuery = `
     }
   }
 `;
-
