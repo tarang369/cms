@@ -1,48 +1,60 @@
-import Layout from "@/components/Layout";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import ProductFilters from "@/components/ProductFilters";
+import ProductsExplorer from "@/components/ProductsExplorer";
+import { buildSeoMetadata } from "@/lib/metadata";
 import { client } from "@/sanity/lib/client";
-import { getAllEntriesQuery, getCategoriesQuery } from "@/sanity/lib/queries";
+import {
+  getAllEntriesQuery,
+  getBrandsQuery,
+  getCategoriesQuery,
+  getSiteSettingsQuery,
+} from "@/sanity/lib/queries";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Products | Acme Catalog",
-  description:
-    "Browse all catalog entries across categories, filter by category, and search by title.",
-};
+export async function generateMetadata() {
+  const siteSettings = await client.fetch(getSiteSettingsQuery);
+
+  return buildSeoMetadata({
+    siteSettings,
+    seo: siteSettings?.defaultSeo,
+    title: "Products Catalog | Neptune Plywood Private Limited",
+    description:
+      "Browse all catalog entries across categories, apply filters, and enquire on WhatsApp.",
+    path: "/products",
+  });
+}
 
 export default async function ProductsPage() {
-  const [entries = [], categories = []] = await Promise.all([
+  const [entries = [], categories = [], brands = []] = await Promise.all([
     client.fetch(getAllEntriesQuery),
     client.fetch(getCategoriesQuery),
+    client.fetch(getBrandsQuery),
   ]);
 
   return (
-    <Layout>
-      <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Products" },
-            ]}
-          />
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Products" },
+        ]}
+      />
 
-          <div className="mb-6 space-y-2 sm:mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-              Products
-            </h1>
-            <p className="max-w-2xl text-sm text-slate-600">
-              View all catalog entries across every category. Use the filters
-              to narrow down by category or search by title.
-            </p>
-          </div>
+      <div className="mb-8 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Product Catalog
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          Explore all catalog entries
+        </h1>
+        <p className="max-w-2xl text-sm text-zinc-600 sm:text-base">
+          Browse products and catalogs from A-Z. Refine by category, brand, and
+          search terms.
+        </p>
+      </div>
 
-          <ProductFilters entries={entries} categories={categories} />
-        </div>
-      </section>
-    </Layout>
+      <ProductsExplorer entries={entries} categories={categories} brands={brands} />
+    </div>
   );
 }
 

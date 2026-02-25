@@ -1,44 +1,62 @@
-import Layout from "@/components/Layout";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import CategoryCard from "@/components/CategoryCard";
+import { buildSeoMetadata } from "@/lib/metadata";
 import { client } from "@/sanity/lib/client";
-import { getCategoriesQuery } from "@/sanity/lib/queries";
+import { getCategoriesQuery, getSiteSettingsQuery } from "@/sanity/lib/queries";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Categories | Acme Catalog",
-  description: "Browse all catalog categories and drill into detailed entries.",
-};
+export async function generateMetadata() {
+  const siteSettings = await client.fetch(getSiteSettingsQuery);
+
+  return buildSeoMetadata({
+    siteSettings,
+    seo: siteSettings?.defaultSeo,
+    title: "Categories | Neptune Plywood Private Limited",
+    description:
+      "Explore catalog categories for plywood, laminates, hardware and furniture solutions.",
+    path: "/categories",
+  });
+}
 
 export default async function CategoriesPage() {
   const categories = (await client.fetch(getCategoriesQuery)) || [];
 
   return (
-    <Layout>
-      <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-          <div className="mb-6 space-y-2 sm:mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-              Categories
-            </h1>
-            <p className="max-w-2xl text-sm text-slate-600">
-              Explore catalog entries grouped by category. Click any category
-              to see all related items.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => (
-              <CategoryCard key={category._id} category={category} />
-            ))}
-          </div>
-          {categories.length === 0 && (
-            <p className="text-sm text-slate-500">
-              No categories found in your Sanity dataset.
-            </p>
-          )}
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Categories" },
+        ]}
+      />
+
+      <div className="mb-8 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Catalog Categories
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          Browse categories
+        </h1>
+        <p className="max-w-2xl text-sm text-zinc-600 sm:text-base">
+          Explore category-wise catalog collections and move directly to detailed
+          product pages.
+        </p>
+      </div>
+
+      {categories.length > 0 ? (
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {categories.map((category) => (
+            <CategoryCard key={category._id} category={category} />
+          ))}
         </div>
-      </section>
-    </Layout>
+      ) : (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-sm text-zinc-600">
+          No categories found yet. Add categories in Sanity to populate this
+          page.
+        </div>
+      )}
+    </div>
   );
 }
 

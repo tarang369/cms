@@ -1,10 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
-import Layout from "@/components/Layout";
 import CategoryCard from "@/components/CategoryCard";
-import ProductCard from "@/components/ProductCard";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import EntryCard from "@/components/EntryCard";
+import ImagePlaceholder from "@/components/ImagePlaceholder";
+import { buildSeoMetadata, getSiteName } from "@/lib/metadata";
+import { createWhatsAppHref, normalizePhone } from "@/lib/whatsapp";
 import { client } from "@/sanity/lib/client";
 import {
+  getBrandsQuery,
   getCategoriesQuery,
   getFeaturedEntriesQuery,
   getSiteSettingsQuery,
@@ -12,178 +15,316 @@ import {
 
 export const revalidate = 60;
 
-export default async function HomePage() {
-  const [categories = [], featuredEntries = [], siteSettings] =
+async function getHomeData() {
+  const [categories = [], featuredEntries = [], siteSettings, brands = []] =
     await Promise.all([
       client.fetch(getCategoriesQuery),
       client.fetch(getFeaturedEntriesQuery),
       client.fetch(getSiteSettingsQuery),
+      client.fetch(getBrandsQuery),
     ]);
 
+  return {
+    categories,
+    featuredEntries,
+    siteSettings,
+    brands,
+  };
+}
+
+export async function generateMetadata() {
+  const siteSettings = await client.fetch(getSiteSettingsQuery);
+  const siteName = getSiteName(siteSettings);
+
+  return buildSeoMetadata({
+    siteSettings,
+    seo: siteSettings?.defaultSeo,
+    title: `${siteName} | Premium Catalog`,
+    description:
+      "Browse premium plywood, laminates, hardware and furniture catalogs and enquire instantly on WhatsApp.",
+    path: "/",
+  });
+}
+
+export default async function HomePage() {
+  const { categories, featuredEntries, siteSettings, brands } =
+    await getHomeData();
+
+  const companyName = getSiteName(siteSettings);
   const topCategories = categories.slice(0, 4);
-  const fallbackPhone =
-    siteSettings?.organization?.whatsappNumber || siteSettings?.whatsappNumber;
+  const heroCategory = categories.find((category) => category?.thumbnail?.url);
+  const whatsappPhone = siteSettings?.organization?.whatsappNumber;
+  const phone = siteSettings?.organization?.phone || "+91 00000 00000";
+  const email = "sales@neptuneplywood.com";
+
+  const whatsappHref = createWhatsAppHref({
+    phone: whatsappPhone,
+    message:
+      "Hi, I would like to enquire about Neptune Plywood Private Limited catalogs.",
+  });
 
   return (
-    <Layout>
-      <section className="border-b bg-linear-to-b from-emerald-50 to-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 lg:flex-row lg:items-center lg:py-16">
-          <div className="flex-1 space-y-5">
-            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-              Catalog Solutions
+    <div className="pb-8">
+      <section className="border-b border-zinc-200">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:px-8 lg:py-20">
+          <div className="space-y-6">
+            <p className="inline-flex rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600">
+              Neptune Plywood Private Limited
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              Discover and share your full product catalog.
+            <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl lg:text-5xl">
+              Premium plywood, laminates, hardware and furniture solutions
             </h1>
-            <p className="max-w-xl text-base text-slate-600 sm:text-lg">
-              A clean, searchable catalog experience for your customers. Browse
-              categories, view product details, and enquire instantly via
-              WhatsApp.
+            <p className="max-w-xl text-base text-zinc-600 sm:text-lg">
+              Browse our catalogs and enquire instantly on WhatsApp.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
-              >
-                Browse catalog
-              </Link>
-              {fallbackPhone && (
-                <WhatsAppButton
-                  phone={fallbackPhone}
-                  title="our catalog"
-                  messageTemplate="Hi, I would like to know more about your catalog."
-                  className="inline-flex"
-                />
+              {whatsappHref ? (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                >
+                  Enquire on WhatsApp
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center justify-center rounded-xl bg-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-600"
+                >
+                  WhatsApp unavailable
+                </button>
               )}
+              <Link
+                href="/categories"
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900"
+              >
+                Browse Categories
+              </Link>
             </div>
           </div>
-          <div className="flex-1">
-            <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
-              <div className="grid grid-cols-2 gap-4 text-sm text-slate-700 sm:grid-cols-3">
-                <div>
-                  <p className="font-semibold text-slate-900">Catalog-first</p>
-                  <p className="mt-1 text-slate-500">
-                    Focused on discovery and enquiries, not checkout.
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    Powered by Sanity
-                  </p>
-                  <p className="mt-1 text-slate-500">
-                    Manage products, PDFs, and categories in one CMS.
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    WhatsApp enquiries
-                  </p>
-                  <p className="mt-1 text-slate-500">
-                    Customers can contact you instantly with one tap.
-                  </p>
-                </div>
+
+          <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <div className="relative aspect-[4/3] w-full overflow-hidden">
+              {heroCategory?.thumbnail?.url ? (
+                <Image
+                  src={heroCategory.thumbnail.url}
+                  alt={heroCategory.thumbnail.alt || heroCategory.title}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover"
+                />
+              ) : (
+                <ImagePlaceholder label={companyName} />
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 text-white">
+                <p className="text-xs uppercase tracking-[0.2em] text-white/80">
+                  Featured Category
+                </p>
+                <p className="mt-1 text-lg font-semibold">
+                  {heroCategory?.title || "Premium catalog collection"}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-b bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">
-                Browse by category
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Start by exploring a few key categories from your catalog.
-              </p>
-            </div>
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
-            >
-              View all categories
-            </Link>
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              Categories
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+              Browse by category
+            </h2>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link
+            href="/categories"
+            className="text-sm font-semibold text-zinc-700 transition hover:text-zinc-950"
+          >
+            View all
+          </Link>
+        </div>
+        {topCategories.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {topCategories.map((category) => (
               <CategoryCard key={category._id} category={category} />
             ))}
-            {topCategories.length === 0 && (
-              <p className="text-sm text-slate-500">
-                No categories found. Create some in your Sanity Studio.
-              </p>
-            )}
           </div>
-        </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-sm text-zinc-600">
+            Categories will appear here once they are added in Sanity.
+          </div>
+        )}
       </section>
 
-      <section className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
-          <div className="flex items-center justify-between gap-4">
+      <section className="border-y border-zinc-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">
-                Featured products
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Recently added catalog entries, including products and PDF
-                catalogs.
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                Featured
               </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+                New arrivals
+              </h2>
             </div>
             <Link
               href="/products"
-              className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+              className="text-sm font-semibold text-zinc-700 transition hover:text-zinc-950"
             >
               View all products
             </Link>
           </div>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredEntries.map((entry) => (
-              <ProductCard key={entry._id} entry={entry} />
-            ))}
-            {featuredEntries.length === 0 && (
-              <p className="text-sm text-slate-500">
-                No catalog entries found. Add{" "}
-                <span className="font-medium">catalogEntry</span> documents in
-                Sanity to populate this section.
-              </p>
-            )}
-          </div>
+
+          {featuredEntries.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {featuredEntries.map((entry) => (
+                <EntryCard key={entry._id} entry={entry} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-sm text-zinc-600">
+              Featured catalog entries will appear here once added.
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="border-t bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-          <div className="grid gap-6 md:grid-cols-[1.5fr_minmax(0,1fr)] md:items-center">
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Why choose us
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              title: "Quality materials",
+              text: "Curated plywood, laminates and fittings for long-term durability.",
+            },
+            {
+              title: "Wide catalog",
+              text: "Organized categories and subcategories built for quick discovery.",
+            },
+            {
+              title: "Fast enquiry",
+              text: "Send product enquiries on WhatsApp with prefilled context.",
+            },
+            {
+              title: "Trusted brands",
+              text: "Reliable product partners and catalog options for B2B needs.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
+            >
+              <p className="text-base font-semibold text-zinc-900">{item.title}</p>
+              <p className="mt-2 text-sm text-zinc-600">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {brands.length > 0 ? (
+        <section className="border-y border-zinc-200 bg-white">
+          <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                  Brands
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">
+                  Trusted partner brands
+                </h2>
+              </div>
+              <Link
+                href="/brands"
+                className="text-sm font-semibold text-zinc-700 transition hover:text-zinc-950"
+              >
+                View all brands
+              </Link>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {brands.slice(0, 8).map((brand) => (
+                <div
+                  key={brand._id}
+                  className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                      {brand?.logo?.url ? (
+                        <Image
+                          src={brand.logo.url}
+                          alt={brand.logo.alt || brand.title}
+                          fill
+                          sizes="48px"
+                          className="object-contain p-1"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-zinc-500">
+                          BR
+                        </div>
+                      )}
+                    </div>
+                    <p className="line-clamp-2 text-sm font-semibold text-zinc-900">
+                      {brand.title}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-zinc-900 p-8 text-white sm:p-10">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div>
-              <h2 className="text-2xl font-semibold text-slate-900 sm:text-3xl">
-                Ready to share your catalog?
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-300">
+                Contact
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+                Need help selecting the right catalog?
               </h2>
-              <p className="mt-2 text-sm text-slate-600 sm:text-base">
-                Use this catalog experience as the front door to your products.
-                Link directly from social, campaigns, or your website and route
-                every enquiry straight into WhatsApp.
+              <p className="mt-3 text-sm text-zinc-300 sm:text-base">
+                Send your enquiry and our team will respond with the most
+                relevant catalog options.
               </p>
             </div>
-            <div className="flex flex-wrap justify-start gap-3 md:justify-end">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-800 hover:border-slate-400 hover:bg-slate-50"
-              >
-                Explore catalog
-              </Link>
-              {fallbackPhone && (
-                <WhatsAppButton
-                  phone={fallbackPhone}
-                  title="our catalog"
-                  messageTemplate="Hi, I would like to discuss how we can work together."
-                />
-              )}
+
+            <div className="space-y-3 text-sm">
+              <p>Phone: {phone}</p>
+              <p>WhatsApp: {normalizePhone(whatsappPhone) || "Not set"}</p>
+              <p>Email: {email}</p>
             </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {whatsappHref ? (
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100"
+              >
+                Enquire on WhatsApp
+              </a>
+            ) : null}
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-600 px-5 py-3 text-sm font-semibold text-white transition hover:border-zinc-300"
+            >
+              View contact page
+            </Link>
           </div>
         </div>
       </section>
-    </Layout>
+    </div>
   );
 }
+
