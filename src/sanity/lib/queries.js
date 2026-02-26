@@ -204,7 +204,7 @@ export const getRelatedEntriesQuery = `
     _id != $entryId &&
     category._ref == $categoryId
   ]
-  | order(subcategory._ref == $subcategoryId desc, _createdAt desc)[0...6] {
+  | order(select(subcategory._ref == $subcategoryId => 1, 0) desc, _createdAt desc)[0...6] {
     ${entryListProjection}
   }
 `;
@@ -214,4 +214,3 @@ export const getBrandsQuery = `
     ${brandProjection}
   }
 `;
-
