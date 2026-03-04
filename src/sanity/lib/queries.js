@@ -14,6 +14,7 @@ const seoFieldsProjection = `
 const categoryProjection = `
   _id,
   title,
+  mode,
   "slug": slug.current,
   "thumbnail": {
     "url": thumbnail.asset->url,
@@ -25,6 +26,7 @@ const categoryProjection = `
 const subcategoryProjection = `
   _id,
   title,
+  mode,
   "slug": slug.current,
   "thumbnail": {
     "url": thumbnail.asset->url,
@@ -34,6 +36,27 @@ const subcategoryProjection = `
     _id,
     title,
     "slug": slug.current
+  },
+  ${seoFieldsProjection}
+`;
+
+const grandchildCategoryProjection = `
+  _id,
+  title,
+  "slug": slug.current,
+  "thumbnail": {
+    "url": thumbnail.asset->url,
+    "alt": coalesce(thumbnail.alt, title)
+  },
+  "subcategory": subcategory->{
+    _id,
+    title,
+    "slug": slug.current,
+    "category": category->{
+      _id,
+      title,
+      "slug": slug.current
+    }
   },
   ${seoFieldsProjection}
 `;
@@ -72,6 +95,11 @@ const entryListProjection = `
     "slug": slug.current
   },
   "subcategory": subcategory->{
+    _id,
+    title,
+    "slug": slug.current
+  },
+  "grandchildCategory": grandchildCategory->{
     _id,
     title,
     "slug": slug.current
@@ -141,6 +169,42 @@ export const getSubcategoriesByCategorySlugQuery = `
   }
 `;
 
+export const getSubcategoryByCategoryAndSlugQuery = `
+  *[
+    _type == "subcategory" &&
+    defined(category->slug.current) &&
+    category->slug.current == $categorySlug &&
+    slug.current == $subcategorySlug
+  ][0]{
+    ${subcategoryProjection}
+  }
+`;
+
+export const getGrandchildCategoriesBySubcategorySlugsQuery = `
+  *[
+    _type == "grandchildCategory" &&
+    defined(subcategory->slug.current) &&
+    defined(subcategory->category->slug.current) &&
+    subcategory->category->slug.current == $categorySlug &&
+    subcategory->slug.current == $subcategorySlug
+  ] | order(title asc) {
+    ${grandchildCategoryProjection}
+  }
+`;
+
+export const getGrandchildCategoryBySlugsQuery = `
+  *[
+    _type == "grandchildCategory" &&
+    defined(subcategory->slug.current) &&
+    defined(subcategory->category->slug.current) &&
+    subcategory->category->slug.current == $categorySlug &&
+    subcategory->slug.current == $subcategorySlug &&
+    slug.current == $grandchildSlug
+  ][0]{
+    ${grandchildCategoryProjection}
+  }
+`;
+
 export const getFeaturedEntriesQuery = `
   *[_type == "catalogEntry"] | order(_createdAt desc)[0...8] {
     ${entryListProjection}
@@ -152,6 +216,32 @@ export const getEntriesByCategorySlugQuery = `
     _type == "catalogEntry" &&
     defined(category->slug.current) &&
     category->slug.current == $slug
+  ] | order(title asc) {
+    ${entryListProjection}
+  }
+`;
+
+export const getEntriesBySubcategorySlugsQuery = `
+  *[
+    _type == "catalogEntry" &&
+    defined(category->slug.current) &&
+    category->slug.current == $categorySlug &&
+    defined(subcategory->slug.current) &&
+    subcategory->slug.current == $subcategorySlug
+  ] | order(title asc) {
+    ${entryListProjection}
+  }
+`;
+
+export const getEntriesByGrandchildCategorySlugsQuery = `
+  *[
+    _type == "catalogEntry" &&
+    defined(category->slug.current) &&
+    category->slug.current == $categorySlug &&
+    defined(subcategory->slug.current) &&
+    subcategory->slug.current == $subcategorySlug &&
+    defined(grandchildCategory->slug.current) &&
+    grandchildCategory->slug.current == $grandchildSlug
   ] | order(title asc) {
     ${entryListProjection}
   }
@@ -182,7 +272,22 @@ export const getEntryBySlugQuery = `
     "subcategory": subcategory->{
       _id,
       title,
-      "slug": slug.current
+      "slug": slug.current,
+      "category": category->{
+        _id,
+        title,
+        "slug": slug.current
+      }
+    },
+    "grandchildCategory": grandchildCategory->{
+      _id,
+      title,
+      "slug": slug.current,
+      "subcategory": subcategory->{
+        _id,
+        title,
+        "slug": slug.current
+      }
     },
     "brand": brand->{
       _id,
@@ -204,7 +309,14 @@ export const getRelatedEntriesQuery = `
     _id != $entryId &&
     category._ref == $categoryId
   ]
-  | order(select(subcategory._ref == $subcategoryId => 1, 0) desc, _createdAt desc)[0...6] {
+  | order(
+      select(
+        grandchildCategory._ref == $grandchildCategoryId => 2,
+        subcategory._ref == $subcategoryId => 1,
+        0
+      ) desc,
+      _createdAt desc
+    )[0...6] {
     ${entryListProjection}
   }
 `;

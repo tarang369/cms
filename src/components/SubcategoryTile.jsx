@@ -1,32 +1,54 @@
-import Image from "next/image";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
+import Image from "next/image";
+import Link from "next/link";
 
-export default function SubcategoryTile({ subcategory }) {
-  if (!subcategory) {
-    return null;
-  }
+export default function SubcategoryTile({
+    subcategory,
+    href,
+    itemLabel = "Subcategory",
+}) {
+    if (!subcategory) {
+        return null;
+    }
 
-  const title = subcategory?.title || "Subcategory";
+    const title = subcategory?.title || itemLabel;
+    const className = href
+        ? "group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+        : "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm";
+    const content = (
+        <>
+            <div className="relative aspect-[16/10] w-full overflow-hidden">
+                {subcategory?.thumbnail?.url ? (
+                    <Image
+                        src={subcategory.thumbnail.url}
+                        alt={subcategory.thumbnail.alt || `${title} thumbnail`}
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        className={`object-cover ${href ? "transition duration-500 group-hover:scale-105" : ""}`}
+                    />
+                ) : (
+                    <ImagePlaceholder label={title} />
+                )}
+            </div>
+            <div className="space-y-2 px-4 py-4">
+                {/* <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    {itemLabel}
+                </p> */}
+                <p className="text-sm font-semibold text-zinc-900">{title}</p>
+                <p className="text-sm text-zinc-600">
+                    Explore {title} collections
+                </p>
+            </div>
+        </>
+    );
 
-  return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-      <div className="relative aspect-[16/10] w-full overflow-hidden">
-        {subcategory?.thumbnail?.url ? (
-          <Image
-            src={subcategory.thumbnail.url}
-            alt={subcategory.thumbnail.alt || `${title} thumbnail`}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover"
-          />
-        ) : (
-          <ImagePlaceholder label={title} />
-        )}
-      </div>
-      <div className="px-4 py-4">
-        <p className="text-sm font-semibold text-zinc-900">{title}</p>
-      </div>
-    </div>
-  );
+    if (!href) {
+        return <div className={className}>{content}</div>;
+    }
+
+    return (
+        <Link href={href} className={className}>
+            {content}
+        </Link>
+    );
 }
-

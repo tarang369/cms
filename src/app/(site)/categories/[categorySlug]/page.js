@@ -101,7 +101,11 @@ export default async function CategoryDetailPage({ params }) {
           </p>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {subcategories.map((subcategory) => (
-              <SubcategoryTile key={subcategory._id} subcategory={subcategory} />
+              <SubcategoryTile
+                key={subcategory._id}
+                subcategory={subcategory}
+                href={`/categories/${categorySlug}/${subcategory.slug}`}
+              />
             ))}
           </div>
         </section>
@@ -122,4 +126,3 @@ export default async function CategoryDetailPage({ params }) {
     </div>
   );
 }
-

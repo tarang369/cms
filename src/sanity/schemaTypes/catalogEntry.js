@@ -49,6 +49,44 @@ export default {
             type: "reference",
             to: [{ type: "subcategory" }],
             description: "Set this only if the category uses subcategories.",
+            options: {
+                filter: ({ document }) => {
+                    const categoryRef = document?.category?._ref;
+
+                    if (!categoryRef) {
+                        return {};
+                    }
+
+                    return {
+                        filter: "category._ref == $categoryId",
+                        params: { categoryId: categoryRef },
+                    };
+                },
+            },
+        },
+
+        {
+            name: "grandchildCategory",
+            title: "Grandchild Category (optional)",
+            type: "reference",
+            to: [{ type: "grandchildCategory" }],
+            description:
+                "Set this only if the selected subcategory uses grandchild categories.",
+            hidden: ({ document }) => !document?.subcategory?._ref,
+            options: {
+                filter: ({ document }) => {
+                    const subcategoryRef = document?.subcategory?._ref;
+
+                    if (!subcategoryRef) {
+                        return {};
+                    }
+
+                    return {
+                        filter: "subcategory._ref == $subcategoryId",
+                        params: { subcategoryId: subcategoryRef },
+                    };
+                },
+            },
         },
 
         {
@@ -128,22 +166,71 @@ export default {
         Rule.custom(async (doc, context) => {
             // Enforce category mode rules
             const categoryRef = doc?.category?._ref;
+            const subcategoryRef = doc?.subcategory?._ref;
+            const grandchildCategoryRef = doc?.grandchildCategory?._ref;
             if (!categoryRef) return true;
 
             const client = context.getClient({ apiVersion: "2025-01-01" });
-            const category = await client.fetch(
-                `*[_type=="category" && _id==$id][0]{mode}`,
-                { id: categoryRef },
-            );
+            const [category, subcategory, grandchildCategory] = await Promise.all([
+                client.fetch(
+                    `*[_type=="category" && _id==$id][0]{
+                        "mode": coalesce(mode, "direct")
+                    }`,
+                    { id: categoryRef },
+                ),
+                subcategoryRef
+                    ? client.fetch(
+                          `*[_type=="subcategory" && _id==$id][0]{
+                              "mode": coalesce(mode, "direct"),
+                              "categoryId": category._ref
+                          }`,
+                          { id: subcategoryRef },
+                      )
+                    : null,
+                grandchildCategoryRef
+                    ? client.fetch(
+                          `*[_type=="grandchildCategory" && _id==$id][0]{
+                              "subcategoryId": subcategory._ref
+                          }`,
+                          { id: grandchildCategoryRef },
+                      )
+                    : null,
+            ]);
 
             if (!category?.mode) return true;
 
-            if (category.mode === "direct" && doc.subcategory?._ref) {
-                return "This category is Direct. Do not set a subcategory for entries under it.";
+            if (category.mode === "direct" && (subcategoryRef || grandchildCategoryRef)) {
+                return "This category is Direct. Do not set a subcategory or grandchild category for entries under it.";
             }
 
-            if (category.mode === "subcategory" && !doc.subcategory?._ref) {
+            if (category.mode === "subcategory" && !subcategoryRef) {
                 return "This category requires a subcategory. Please select one.";
+            }
+
+            if (subcategoryRef && subcategory?.categoryId !== categoryRef) {
+                return "The selected subcategory does not belong to the chosen category.";
+            }
+
+            if (!subcategoryRef && grandchildCategoryRef) {
+                return "Select a subcategory before setting a grandchild category.";
+            }
+
+            if (
+                grandchildCategoryRef &&
+                grandchildCategory?.subcategoryId !== subcategoryRef
+            ) {
+                return "The selected grandchild category does not belong to the chosen subcategory.";
+            }
+
+            if (subcategory?.mode === "direct" && grandchildCategoryRef) {
+                return "This subcategory is Direct. Do not set a grandchild category for entries under it.";
+            }
+
+            if (
+                subcategory?.mode === "grandchildCategory" &&
+                !grandchildCategoryRef
+            ) {
+                return "This subcategory requires a grandchild category. Please select one.";
             }
 
             return true;

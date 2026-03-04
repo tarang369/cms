@@ -64,6 +64,7 @@ export default async function ProductDetailPage({ params }) {
           entryId: entry._id,
           categoryId: entry.category._id,
           subcategoryId: entry?.subcategory?._id || "",
+          grandchildCategoryId: entry?.grandchildCategory?._id || "",
         })
       : [];
 
@@ -73,12 +74,44 @@ export default async function ProductDetailPage({ params }) {
 
   const categoryTitle = entry?.category?.title || "Catalog";
   const subcategoryTitle = entry?.subcategory?.title;
+  const grandchildCategoryTitle = entry?.grandchildCategory?.title;
   const fallbackPhone =
     siteSettings?.organization?.whatsappNumber ||
     siteSettings?.organization?.phone ||
     "";
   const tags = Array.isArray(entry?.tags) ? entry.tags.filter(Boolean) : [];
   const pdfUrl = entry?.catalogPdf?.url || entry?.catalogPdfUrl;
+  const categoryHref = entry?.category?.slug
+    ? `/categories/${entry.category.slug}`
+    : null;
+  const subcategoryHref =
+    categoryHref && entry?.subcategory?.slug
+      ? `${categoryHref}/${entry.subcategory.slug}`
+      : null;
+  const grandchildCategoryHref =
+    subcategoryHref && entry?.grandchildCategory?.slug
+      ? `${subcategoryHref}/${entry.grandchildCategory.slug}`
+      : null;
+  const hierarchyItems = [
+    categoryTitle
+      ? {
+          label: categoryTitle,
+          href: categoryHref,
+        }
+      : null,
+    subcategoryTitle
+      ? {
+          label: subcategoryTitle,
+          href: subcategoryHref,
+        }
+      : null,
+    grandchildCategoryTitle
+      ? {
+          label: grandchildCategoryTitle,
+          href: grandchildCategoryHref,
+        }
+      : null,
+  ].filter(Boolean);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
@@ -86,10 +119,22 @@ export default async function ProductDetailPage({ params }) {
         items={[
           { label: "Home", href: "/" },
           { label: "Products", href: "/products" },
-          entry?.category?.slug
+          categoryHref
             ? {
                 label: entry.category.title,
-                href: `/categories/${entry.category.slug}`,
+                href: categoryHref,
+              }
+            : null,
+          subcategoryHref
+            ? {
+                label: entry.subcategory.title,
+                href: subcategoryHref,
+              }
+            : null,
+          grandchildCategoryHref
+            ? {
+                label: entry.grandchildCategory.title,
+                href: grandchildCategoryHref,
               }
             : null,
           { label: entry.title },
@@ -168,17 +213,22 @@ export default async function ProductDetailPage({ params }) {
               {entry.title}
             </h1>
             <p className="mt-3 text-sm text-zinc-600">
-              {entry?.category?.slug ? (
-                <Link
-                  href={`/categories/${entry.category.slug}`}
-                  className="font-medium text-zinc-900"
-                >
-                  {categoryTitle}
-                </Link>
-              ) : (
-                <span className="font-medium text-zinc-900">{categoryTitle}</span>
-              )}
-              {subcategoryTitle ? ` / ${subcategoryTitle}` : ""}
+              {hierarchyItems.map((item, index) => (
+                <span key={`${item.label}-${item.href || index}`}>
+                  {index > 0 ? (
+                    <span className="text-zinc-400"> / </span>
+                  ) : null}
+                  {item.href ? (
+                    <Link href={item.href} className="font-medium text-zinc-900">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-zinc-900">
+                      {item.label}
+                    </span>
+                  )}
+                </span>
+              ))}
             </p>
             <div className="mt-4 rounded-xl bg-zinc-50 p-4 text-sm leading-relaxed text-zinc-700">
               {summaryText}

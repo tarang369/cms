@@ -24,6 +24,28 @@ export default {
             validation: (Rule) => Rule.required(),
         },
         {
+            name: "mode",
+            title: "Subcategory Structure Mode",
+            type: "string",
+            options: {
+                list: [
+                    {
+                        title: "Direct (entries directly under subcategory)",
+                        value: "direct",
+                    },
+                    {
+                        title:
+                            "Grandchild Category (entries under grandchild categories)",
+                        value: "grandchildCategory",
+                    },
+                    { title: "Mixed (allow both)", value: "mixed" },
+                ],
+                layout: "radio",
+            },
+            initialValue: "direct",
+            validation: (Rule) => Rule.required(),
+        },
+        {
             name: "thumbnail",
             title: "Thumbnail",
             type: "image",
