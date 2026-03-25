@@ -20,7 +20,8 @@ export default function CategoryCard({ category }) {
                         src={category.thumbnail.url}
                         alt={category.thumbnail.alt || `${title} thumbnail`}
                         fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        quality={90}
                         className="object-cover transition duration-500 group-hover:scale-105"
                     />
                 ) : (

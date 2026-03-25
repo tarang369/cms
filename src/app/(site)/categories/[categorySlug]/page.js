@@ -76,7 +76,8 @@ export default async function CategoryDetailPage({ params }) {
               src={category.thumbnail.url}
               alt={category.thumbnail.alt || category.title}
               fill
-              sizes="(min-width: 1024px) 80vw, 100vw"
+              sizes="(min-width: 1280px) 1280px, 100vw"
+              quality={90}
               className="object-cover"
             />
           ) : (

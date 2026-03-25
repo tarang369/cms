@@ -34,7 +34,8 @@ export default function Gallery({ images = [], title = "Catalog item" }) {
             src={activeImage.url}
             alt={activeImage.alt || title}
             fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 62vw, 100vw"
+            quality={90}
             className="object-cover"
           />
         </div>
@@ -67,4 +68,3 @@ export default function Gallery({ images = [], title = "Catalog item" }) {
     </div>
   );
 }
-

@@ -112,7 +112,8 @@ export default async function HomePage() {
                   src={heroCategory.thumbnail.url}
                   alt={heroCategory.thumbnail.alt || heroCategory.title}
                   fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  sizes="(min-width: 1024px) 45vw, 100vw"
+                  quality={90}
                   className="object-cover"
                 />
               ) : (
@@ -327,4 +328,3 @@ export default async function HomePage() {
     </div>
   );
 }
-

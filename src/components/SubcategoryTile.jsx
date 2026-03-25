@@ -23,7 +23,8 @@ export default function SubcategoryTile({
                         src={subcategory.thumbnail.url}
                         alt={subcategory.thumbnail.alt || `${title} thumbnail`}
                         fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        quality={90}
                         className={`object-cover ${href ? "transition duration-500 group-hover:scale-105" : ""}`}
                     />
                 ) : (
