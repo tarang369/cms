@@ -103,7 +103,6 @@ export default async function SubcategoryDetailPage({ params }) {
                             alt={subcategory.thumbnail.alt || subcategory.title}
                             fill
                             sizes="(min-width: 1280px) 1280px, 100vw"
-                            quality={90}
                             className="object-cover"
                         />
                     ) : (
