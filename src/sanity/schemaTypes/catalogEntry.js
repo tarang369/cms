@@ -147,15 +147,15 @@ export default {
                 },
                 {
                     name: "messageTemplate",
-                    title: "Message Template",
+                    title: "Additional WhatsApp Note",
                     type: "text",
                     rows: 3,
                     description:
-                        "Optional. Supports {{title}}, {{category}}, {{brand}}, {{code}}, {{slug}}, {{url}}, {{consent}}, and {{consentValue}} placeholders.",
+                        "Optional. This no longer replaces the default WhatsApp enquiry format. If provided, the last meaningful line is appended as an extra note after the standard product details. Supports {{title}}, {{category}}, {{brand}}, {{code}}, {{slug}}, {{url}}, {{consent}}, and {{consentValue}} placeholders.",
                 },
             ],
             description:
-                "Uses the site's generic WhatsApp number. Set only the product code and optional message template here.",
+                "Uses the site's generic WhatsApp number. Set only the product code and an optional extra note here.",
         },
 
         { name: "seo", title: "SEO", type: "seoFields" },

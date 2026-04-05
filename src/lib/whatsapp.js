@@ -26,12 +26,57 @@ function replaceTemplateTokens(template, replacements) {
   }, template);
 }
 
+function extractAdditionalNote(messageTemplate, replacements) {
+  if (!messageTemplate?.trim()) {
+    return "";
+  }
+
+  const ignoredPrefixes = [
+    `${PRODUCT_LABEL}:`,
+    `${CATEGORY_LABEL}:`,
+    `${BRAND_LABEL}:`,
+    `${CODE_LABEL}:`,
+    `${SLUG_LABEL}:`,
+    `${URL_LABEL}:`,
+    `${SOURCE_LABEL}:`,
+    `${CONSENT_LINE_LABEL}:`,
+    "Quantity:",
+  ].map((value) => value.toLowerCase());
+
+  const ignoredLines = new Set(
+    [
+      "Hello, I would like to inquire about the following product.",
+      "Please share the relevant details for this product.",
+      "Thank you.",
+    ].map((value) => value.toLowerCase()),
+  );
+
+  const resolvedTemplate = replaceTemplateTokens(messageTemplate, replacements)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => {
+      const normalizedLine = line.toLowerCase();
+
+      if (ignoredLines.has(normalizedLine)) {
+        return false;
+      }
+
+      return !ignoredPrefixes.some((prefix) =>
+        normalizedLine.startsWith(prefix),
+      );
+    });
+
+  return resolvedTemplate.at(-1) || "";
+}
+
 function buildDefaultWhatsAppMessage({
   title,
   category,
   brand,
   productUrl,
   consentLine,
+  additionalNote,
 }) {
   const lines = [
     "Hello, I would like to inquire about the following product.",
@@ -43,6 +88,7 @@ function buildDefaultWhatsAppMessage({
     productUrl ? `${URL_LABEL}: ${productUrl}` : null,
     "",
     "Please share the relevant details for this product.",
+    additionalNote || null,
     "",
     "Thank you.",
     "",
@@ -70,56 +116,24 @@ export function buildWhatsAppMessage({
   const safeProductUrl = productUrl || "";
   const safeConsentValue = consentValue || "No";
   const consentLine = `${CONSENT_LINE_LABEL}: ${safeConsentValue}`;
-  const productSummaryLines = [
-    `${PRODUCT_LABEL}: ${safeTitle}`,
-    safeCategory ? `${CATEGORY_LABEL}: ${safeCategory}` : null,
-    safeBrand ? `${BRAND_LABEL}: ${safeBrand}` : null,
-    "Quantity: (Please mention quantity)",
-    safeProductUrl ? `${URL_LABEL}: ${safeProductUrl}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  if (messageTemplate?.trim()) {
-    const resolvedTemplate = replaceTemplateTokens(messageTemplate, {
-      title: safeTitle,
-      category: safeCategory,
-      brand: safeBrand,
-      code: safeCode,
-      slug: safeSlug,
-      url: safeProductUrl,
-      consent: consentLine,
-      consentValue: safeConsentValue,
-    }).trim();
-
-    const includesProductTitle =
-      resolvedTemplate.toLowerCase().includes(safeTitle.toLowerCase()) ||
-      resolvedTemplate.toLowerCase().includes(PRODUCT_LABEL.toLowerCase());
-
-    if (includesProductTitle) {
-      return resolvedTemplate;
-    }
-
-    return [
-      "Hello, I would like to inquire about the following product.",
-      "",
-      productSummaryLines,
-      "",
-      resolvedTemplate,
-    ]
-      .filter(Boolean)
-      .join("\n")
-      .trim();
-  }
-
-  return buildDefaultWhatsAppMessage({
+  const additionalNote = extractAdditionalNote(messageTemplate, {
     title: safeTitle,
     category: safeCategory,
     brand: safeBrand,
     code: safeCode,
     slug: safeSlug,
+    url: safeProductUrl,
+    consent: consentLine,
+    consentValue: safeConsentValue,
+  });
+
+  return buildDefaultWhatsAppMessage({
+    title: safeTitle,
+    category: safeCategory,
+    brand: safeBrand,
     productUrl: safeProductUrl,
     consentLine,
+    additionalNote,
   });
 }
 
