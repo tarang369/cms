@@ -7,6 +7,10 @@ import Gallery from "@/components/Gallery";
 import WhatsAppCTA from "@/components/WhatsAppCTA";
 import { getRouteParam } from "@/lib/getRouteParam";
 import { buildSeoMetadata } from "@/lib/metadata";
+import {
+  getConfiguredSiteUrl,
+  getConfiguredWhatsAppNumber,
+} from "@/lib/whatsappConfig";
 import { client } from "@/sanity/lib/client";
 import {
   getEntryBySlugQuery,
@@ -15,6 +19,18 @@ import {
 } from "@/sanity/lib/queries";
 
 export const revalidate = 60;
+
+function buildProductUrl(siteUrl, slug) {
+  if (!siteUrl || !slug) {
+    return "";
+  }
+
+  try {
+    return new URL(`/products/${slug}`, siteUrl).toString();
+  } catch {
+    return "";
+  }
+}
 
 export async function generateMetadata({ params }) {
   const slug = await getRouteParam(params, "slug");
@@ -75,10 +91,11 @@ export default async function ProductDetailPage({ params }) {
   const categoryTitle = entry?.category?.title || "Catalog";
   const subcategoryTitle = entry?.subcategory?.title;
   const grandchildCategoryTitle = entry?.grandchildCategory?.title;
-  const fallbackPhone =
-    siteSettings?.organization?.whatsappNumber ||
-    siteSettings?.organization?.phone ||
-    "";
+  const whatsappPhone = getConfiguredWhatsAppNumber();
+  const productUrl = buildProductUrl(
+    getConfiguredSiteUrl(siteSettings),
+    entry?.slug,
+  );
   const tags = Array.isArray(entry?.tags) ? entry.tags.filter(Boolean) : [];
   const pdfUrl = entry?.catalogPdf?.url || entry?.catalogPdfUrl;
   const categoryHref = entry?.category?.slug
@@ -161,7 +178,7 @@ export default async function ProductDetailPage({ params }) {
                     href={pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                    className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold !text-white transition hover:bg-zinc-800"
                   >
                     Open PDF
                   </a>
@@ -254,11 +271,13 @@ export default async function ProductDetailPage({ params }) {
           </section>
 
           <WhatsAppCTA
-            phone={entry?.whatsapp?.phone}
-            fallbackPhone={fallbackPhone}
+            phone={whatsappPhone}
             title={entry?.title}
             category={entry?.category?.title}
+            brand={entry?.brand?.title}
             code={entry?.whatsapp?.code}
+            slug={entry?.slug}
+            productUrl={productUrl}
             messageTemplate={entry?.whatsapp?.messageTemplate}
           />
 

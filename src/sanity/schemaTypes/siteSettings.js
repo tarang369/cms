@@ -20,7 +20,6 @@ export default {
         { name: "name", title: "Name", type: "string" },
         { name: "logo", title: "Logo", type: "image" },
         { name: "phone", title: "Phone", type: "string" },
-        { name: "whatsappNumber", title: "WhatsApp Number", type: "string" },
         { name: "address", title: "Address", type: "text", rows: 3 },
       ],
     },

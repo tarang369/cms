@@ -141,11 +141,6 @@ export default {
             type: "object",
             fields: [
                 {
-                    name: "phone",
-                    title: "Phone (with country code)",
-                    type: "string",
-                },
-                {
                     name: "code",
                     title: "Product or Brand Code",
                     type: "string",
@@ -155,8 +150,12 @@ export default {
                     title: "Message Template",
                     type: "text",
                     rows: 3,
+                    description:
+                        "Optional. Supports {{title}}, {{category}}, {{brand}}, {{code}}, {{slug}}, {{url}}, {{consent}}, and {{consentValue}} placeholders.",
                 },
             ],
+            description:
+                "Uses the site's generic WhatsApp number. Set only the product code and optional message template here.",
         },
 
         { name: "seo", title: "SEO", type: "seoFields" },

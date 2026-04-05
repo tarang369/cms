@@ -1,5 +1,6 @@
 import { buildSeoMetadata, getSiteName } from "@/lib/metadata";
 import { createWhatsAppHref, normalizePhone } from "@/lib/whatsapp";
+import { getConfiguredWhatsAppNumber } from "@/lib/whatsappConfig";
 import { client } from "@/sanity/lib/client";
 import { getSiteSettingsQuery } from "@/sanity/lib/queries";
 
@@ -23,7 +24,7 @@ export default async function ContactPage() {
   const companyName = getSiteName(siteSettings);
 
   const phone = siteSettings?.organization?.phone || "+91 00000 00000";
-  const whatsappPhone = siteSettings?.organization?.whatsappNumber || phone;
+  const whatsappPhone = getConfiguredWhatsAppNumber();
   const address =
     siteSettings?.organization?.address ||
     "Address details will be updated soon.";
@@ -174,4 +175,3 @@ export default async function ContactPage() {
     </div>
   );
 }
-

@@ -133,7 +133,6 @@ export const getSiteSettingsQuery = `
     organization{
       name,
       phone,
-      whatsappNumber,
       address,
       "logo": {
         "url": logo.asset->url,

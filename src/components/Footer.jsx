@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createWhatsAppHref, normalizePhone } from "@/lib/whatsapp";
+import { getConfiguredWhatsAppNumber } from "@/lib/whatsappConfig";
 
 const quickLinks = [
   { label: "Home", href: "/" },
@@ -16,8 +17,7 @@ export default function Footer({ siteSettings }) {
 
   const phone =
     siteSettings?.organization?.phone || "+91 00000 00000 (update in CMS)";
-  const whatsappPhone =
-    siteSettings?.organization?.whatsappNumber || "+91 00000 00000";
+  const whatsappPhone = getConfiguredWhatsAppNumber();
   const address =
     siteSettings?.organization?.address ||
     "Address details will be updated soon.";
@@ -96,4 +96,3 @@ export default function Footer({ siteSettings }) {
     </footer>
   );
 }
-

@@ -5,6 +5,7 @@ import EntryCard from "@/components/EntryCard";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
 import { buildSeoMetadata, getSiteName } from "@/lib/metadata";
 import { createWhatsAppHref, normalizePhone } from "@/lib/whatsapp";
+import { getConfiguredWhatsAppNumber } from "@/lib/whatsappConfig";
 import { client } from "@/sanity/lib/client";
 import {
   getBrandsQuery,
@@ -53,7 +54,7 @@ export default async function HomePage() {
   const companyName = getSiteName(siteSettings);
   const topCategories = categories.slice(0, 4);
   const heroCategory = categories.find((category) => category?.thumbnail?.url);
-  const whatsappPhone = siteSettings?.organization?.whatsappNumber;
+  const whatsappPhone = getConfiguredWhatsAppNumber();
   const phone = siteSettings?.organization?.phone || "+91 00000 00000";
   const email = "sales@neptuneplywood.com";
 
@@ -83,7 +84,7 @@ export default async function HomePage() {
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                  className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold !text-white transition hover:bg-zinc-800"
                 >
                   Enquire on WhatsApp
                 </a>
