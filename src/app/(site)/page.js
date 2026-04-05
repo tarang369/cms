@@ -1,6 +1,11 @@
 import CategoryCard from "@/components/CategoryCard";
 import EntryCard from "@/components/EntryCard";
 import ImagePlaceholder from "@/components/ImagePlaceholder";
+import {
+    createEmailHref,
+    createPhoneHref,
+    createWhatsAppContactHref,
+} from "@/lib/contactLinks";
 import { buildSeoMetadata, getSiteName } from "@/lib/metadata";
 import { createWhatsAppHref, normalizePhone } from "@/lib/whatsapp";
 import { getConfiguredWhatsAppNumber } from "@/lib/whatsappConfig";
@@ -59,6 +64,9 @@ export default async function HomePage() {
     const whatsappPhone = getConfiguredWhatsAppNumber();
     const phone = siteSettings?.organization?.phone || "+91 00000 00000";
     const email = "sales@neptuneplywood.com";
+    const phoneHref = createPhoneHref(phone);
+    const emailHref = createEmailHref(email);
+    const whatsappContactHref = createWhatsAppContactHref(whatsappPhone);
 
     const whatsappHref = createWhatsAppHref({
         phone: whatsappPhone,
@@ -319,12 +327,47 @@ export default async function HomePage() {
                         </div>
 
                         <div className="space-y-3 text-sm">
-                            <p>Phone: {phone}</p>
+                            <p>
+                                Phone:{" "}
+                                {phoneHref ? (
+                                    <a
+                                        href={phoneHref}
+                                        className="underline decoration-white/30 underline-offset-4 transition hover:text-zinc-200 hover:decoration-white"
+                                    >
+                                        {phone}
+                                    </a>
+                                ) : (
+                                    phone
+                                )}
+                            </p>
                             <p>
                                 WhatsApp:{" "}
-                                {normalizePhone(whatsappPhone) || "Not set"}
+                                {whatsappContactHref ? (
+                                    <a
+                                        href={whatsappContactHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="underline decoration-white/30 underline-offset-4 transition hover:text-zinc-200 hover:decoration-white"
+                                    >
+                                        {normalizePhone(whatsappPhone)}
+                                    </a>
+                                ) : (
+                                    normalizePhone(whatsappPhone) || "Not set"
+                                )}
                             </p>
-                            <p>Email: {email}</p>
+                            <p>
+                                Email:{" "}
+                                {emailHref ? (
+                                    <a
+                                        href={emailHref}
+                                        className="underline decoration-white/30 underline-offset-4 transition hover:text-zinc-200 hover:decoration-white"
+                                    >
+                                        {email}
+                                    </a>
+                                ) : (
+                                    email
+                                )}
+                            </p>
                         </div>
                     </div>
 
@@ -334,7 +377,7 @@ export default async function HomePage() {
                                 href={whatsappHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100"
+                                className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-900! transition hover:bg-zinc-100"
                             >
                                 Enquire on WhatsApp
                             </a>

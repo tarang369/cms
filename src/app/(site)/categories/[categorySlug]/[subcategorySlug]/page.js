@@ -40,7 +40,7 @@ export async function generateMetadata({ params }) {
         siteSettings,
         seo: subcategory?.seo,
         title: `${subcategory.title} Catalog | Neptune Plywood Private Limited`,
-        description: `Browse ${subcategory.title} catalog entries and enquire instantly on WhatsApp.`,
+    description: `Browse ${subcategory.title} catalog entries and enquire instantly on WhatsApp.`,
         path: `/categories/${categorySlug}/${subcategorySlug}`,
         image: subcategory?.thumbnail?.url,
     });

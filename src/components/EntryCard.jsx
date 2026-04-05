@@ -19,7 +19,7 @@ export default function EntryCard({ entry }) {
     const title = entry?.title || "Catalog item";
     const summary =
         entry?.summary ||
-        "Explore this catalog entry and enquire directly on WhatsApp.";
+      "Explore this catalog entry and enquire directly on WhatsApp.";
 
     return (
         <Link

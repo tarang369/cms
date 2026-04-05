@@ -95,7 +95,7 @@ const whatsappLead = {
       fields: [
         {
           name: "customerInitiated",
-          title: "Customer Initiated Inquiry",
+            title: "Customer Initiated Enquiry",
           type: "boolean",
           initialValue: true,
           readOnly: true,

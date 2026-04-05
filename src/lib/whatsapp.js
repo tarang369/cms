@@ -45,7 +45,7 @@ function extractAdditionalNote(messageTemplate, replacements) {
 
   const ignoredLines = new Set(
     [
-      "Hello, I would like to inquire about the following product.",
+      "Hello, I would like to enquire about the following product.",
       "Please share the relevant details for this product.",
       "Thank you.",
     ].map((value) => value.toLowerCase()),
@@ -79,7 +79,7 @@ function buildDefaultWhatsAppMessage({
   additionalNote,
 }) {
   const lines = [
-    "Hello, I would like to inquire about the following product.",
+    "Hello, I would like to enquire about the following product.",
     "",
     `${PRODUCT_LABEL}: ${title || "this catalog item"}`,
     category ? `${CATEGORY_LABEL}: ${category}` : null,

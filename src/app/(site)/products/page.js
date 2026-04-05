@@ -19,7 +19,7 @@ export async function generateMetadata() {
     seo: siteSettings?.defaultSeo,
     title: "Products Catalog | Neptune Plywood Private Limited",
     description:
-      "Browse all catalog entries across categories, apply filters, and enquire on WhatsApp.",
+        "Browse all catalog entries across categories, apply filters, and enquire on WhatsApp.",
     path: "/products",
   });
 }
@@ -57,4 +57,3 @@ export default async function ProductsPage() {
     </div>
   );
 }
-

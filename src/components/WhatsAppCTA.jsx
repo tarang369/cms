@@ -55,7 +55,7 @@ export default function WhatsAppCTA({
                         rel="noopener noreferrer"
                         className="inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold !text-white transition hover:bg-zinc-800"
                     >
-                        Inquire on WhatsApp
+                        Enquire on WhatsApp
                         <svg
                             aria-hidden="true"
                             viewBox="0 0 20 20"
@@ -83,9 +83,22 @@ export default function WhatsAppCTA({
 
                 <p className="text-xs text-zinc-500">
                     Contact number:{" "}
-                    {resolvedPhone ||
+                    {whatsappHref ? (
+                        <a
+                            href={whatsappHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-900 hover:decoration-zinc-900"
+                        >
+                            {resolvedPhone ||
+                                normalizedPhone ||
+                                "Please update in Site Settings"}
+                        </a>
+                    ) : (
+                        resolvedPhone ||
                         normalizedPhone ||
-                        "Please update in Site Settings"}
+                        "Please update in Site Settings"
+                    )}
                 </p>
             </div>
         </div>
